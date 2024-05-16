@@ -20,9 +20,11 @@ app.post("/", async (req, res) => {
     const data = req.body;
 
     // Generate PDF with the received data
-    const pdfPath = await generatePDF(data);
+    const base64Pdf = await generatePDF(data);
 
-    res.status(200).json({ message: "PDF Generated Successfully!", pdfPath });
+    res
+      .status(200)
+      .json({ message: "PDF Generated Successfully!", pdf: base64Pdf });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -35,7 +37,7 @@ app.listen(port, () => {
 async function generatePDF(data) {
   try {
     // Load and compile the template
-    const templatePath = path.resolve(__dirname, "templates/invoice.hbs");
+    const templatePath = path.resolve(__dirname, "templates/hello.hbs");
     const templateHtml = await fs.readFile(templatePath, "utf8");
     const template = Handlebars.compile(templateHtml);
 
@@ -76,19 +78,16 @@ async function generatePDF(data) {
     });
 
     // Create PDF from page content
-    const pdf = await page.pdf({ format: "A4" });
-
-    // Save PDF to a dynamic path
-    const outputDir = path.resolve(__dirname, "out");
-    await fs.ensureDir(outputDir);
-    const pdfPath = path.join(outputDir, `output-${Date.now()}.pdf`);
-    await fs.writeFile(pdfPath, pdf);
-
-    console.log("PDF Generated Successfully!");
+    const pdfBuffer = await page.pdf({ format: "A4" });
 
     await browser.close();
 
-    return pdfPath;
+    // Convert PDF buffer to base64
+    const base64Pdf = pdfBuffer.toString("base64");
+
+    console.log("PDF Generated Successfully!");
+
+    return base64Pdf;
   } catch (error) {
     console.error("Error generating PDF:", error);
     throw error;
