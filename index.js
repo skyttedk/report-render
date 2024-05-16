@@ -2,11 +2,16 @@ const express = require("express");
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Middleware to parse JSON bodies
 app.use(express.json());
 
-app.get("/", (req, res) => {
-  const name = req.query.name || "World";
-  const responseMessage = `Hello, ${name}. This is a custom HTML/JS execution response.`;
+// POST endpoint to handle JSON data
+app.post("/", (req, res) => {
+  const data = req.body;
+
+  // Process the data (you can add your own logic here)
+  const responseMessage = `Received JSON data: ${JSON.stringify(data)}`;
+
   res.status(200).send(responseMessage);
 });
 
