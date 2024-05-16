@@ -37,7 +37,7 @@ app.listen(port, () => {
 async function generatePDF(data) {
   try {
     // Load and compile the template
-    const templatePath = path.resolve(__dirname, "templates/hello.hbs");
+    const templatePath = path.resolve(__dirname, "templates/invoice.hbs");
     const templateHtml = await fs.readFile(templatePath, "utf8");
     const template = Handlebars.compile(templateHtml);
 
