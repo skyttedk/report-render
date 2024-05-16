@@ -63,7 +63,7 @@ async function generatePDF(data) {
         </body>
       </html>`;
 
-    // Launch Puppeteer and create a new page
+    // Launch Puppeteer and create a new spage
     const browser = await puppeteer.launch({
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
       headless: true,
