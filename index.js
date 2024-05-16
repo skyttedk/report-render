@@ -22,9 +22,8 @@ app.post("/", async (req, res) => {
     // Generate PDF with the received data
     const base64Pdf = await generatePDF(data);
 
-    res
-      .status(200)
-      .json({ message: "PDF Generated Successfully!", pdf: base64Pdf });
+    res.status(200).text(base64Pdf);
+    //.json({ message: "PDF Generated Successfully!", pdf: base64Pdf });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
