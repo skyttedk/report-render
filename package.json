@@ -6,7 +6,8 @@
   "scripts": {
     "log": "heroku logs --tail --app report-render",
     "start": "node index.js",
-    "postinstall": "npx puppeteer install"
+    "postinstall": "npx puppeteer install",
+    "heroku-postbuild": "mkdir -p ./.cache && mv /app/.cache/puppeteer ./.cache"
   },
   "keywords": [],
   "author": "",
