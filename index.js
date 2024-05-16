@@ -16,7 +16,7 @@ app.post("/", async (req, res) => {
     const data = req.body;
 
     // Generate PDF with the received data
-    //const pdfPath = await generatePDF(data);
+    const pdfPath = await generatePDF(data);
 
     res.status(200).json({ message: "PDF Generated Successfully!", pdfPath });
   } catch (error) {
@@ -28,58 +28,62 @@ app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
 
-async function generatePDF() {
-  // Load and compile the template
+async function generatePDF(data) {
+  try {
+    // Load and compile the template
+    const templatePath = path.resolve(__dirname, "templates/invoice.hbs");
+    const templateHtml = await fs.readFile(templatePath, "utf8");
+    const template = Handlebars.compile(templateHtml);
 
-  const templateHtml = fs.readFileSync("templates/invoice.hbs", "utf8");
-  const template = Handlebars.compile(templateHtml);
+    // Load CSS
+    const cssPath = path.resolve(__dirname, "css/style.css");
+    const cssContent = await fs.readFile(cssPath, "utf8");
 
-  // Load data
-  const data = fs.readJsonSync("data.json", { encoding: "utf8" });
+    // Generate HTML
+    const html = template(data);
 
-  // Load CSS
-  const cssPath = path.resolve(__dirname, "css/style.css");
-  const cssContent = fs.readFileSync(cssPath, "utf8");
+    const completeHtml = `
+        <!DOCTYPE html>
+        <html lang="da">
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>Document</title>
+            <style>${cssContent}</style>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css" />
+            <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css'>
+            <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js'></script>
+          </head>
+          <body>
+            ${html}
+          </body>
+        </html>`;
 
-  // Generate HTML
-  const html = template(data);
+    // Launch Puppeteer and create a new page
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
 
-  const completeHtml = `
-    <!DOCTYPE html>
-    <html lang="da">
-      <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Document</title>
-        <style>${cssContent}</style>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css" />
-        <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css'>
-        <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js'></script>
-      </head>
-      <body>
-        ${html}
-      </body>
-    </html>`;
+    // Set the content of the page to the generated HTML
+    await page.setContent(completeHtml, {
+      waitUntil: "domcontentloaded",
+    });
 
-  // Launch Puppeteer and create a new page
-  const browser = await puppeteer.launch();
-  const page = await browser.newPage();
+    // Create PDF from page content
+    const pdf = await page.pdf({ format: "A4" });
 
-  // Set the content of the page to the generated HTML
-  await page.setContent(completeHtml, {
-    waitUntil: "domcontentloaded",
-  });
+    // Save PDF to a dynamic path
+    const outputDir = path.resolve(__dirname, "out");
+    await fs.ensureDir(outputDir);
+    const pdfPath = path.join(outputDir, `output-${Date.now()}.pdf`);
+    await fs.writeFile(pdfPath, pdf);
 
-  //const htmlRendered = await page.content();
-  //fs.writeFileSync("out/output.html", htmlRendered);
+    console.log("PDF Generated Successfully!");
 
-  // Create PDF from page content
-  const pdf = await page.pdf({ format: "A4" });
+    await browser.close();
 
-  // Save PDF
-  fs.writeFileSync("out/output.pdf", pdf);
-
-  console.log("PDF Generated Successfully!");
-
-  await browser.close();
+    return pdfPath;
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    throw error;
+  }
 }
