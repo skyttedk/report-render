@@ -1,0 +1,16 @@
+<html lang="da">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <ul class="people_list">
+      {{#each item}}
+        <li>{{"No."}}</li>
+        <li>{{Description}}</li>
+        <img width="100px" src="{{Picture}}" alt="image" />
+      {{/each}}
+    </ul>
+  </body>
+</html>

@@ -1,4 +1,9 @@
+const fs = require("fs-extra");
+const path = require("path");
+const Handlebars = require("handlebars");
+const puppeteer = require("puppeteer");
 const express = require("express");
+
 const app = express();
 const port = process.env.PORT || 3000;
 
