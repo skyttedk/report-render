@@ -1,8 +1,12 @@
 const fs = require("fs-extra");
 const path = require("path");
 const Handlebars = require("handlebars");
-const puppeteer = require("puppeteer");
+const puppeteer = require("puppeteer-extra");
 const express = require("express");
+
+// Use stealth plugin to avoid detection
+const StealthPlugin = require("puppeteer-extra-plugin-stealth");
+puppeteer.use(StealthPlugin());
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -43,24 +47,28 @@ async function generatePDF(data) {
     const html = template(data);
 
     const completeHtml = `
-        <!DOCTYPE html>
-        <html lang="da">
-          <head>
-            <meta charset="UTF-8" />
-            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-            <title>Document</title>
-            <style>${cssContent}</style>
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css" />
-            <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css'>
-            <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js'></script>
-          </head>
-          <body>
-            ${html}
-          </body>
-        </html>`;
+      <!DOCTYPE html>
+      <html lang="da">
+        <head>
+          <meta charset="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <title>Document</title>
+          <style>${cssContent}</style>
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css" />
+          <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css'>
+          <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js'></script>
+        </head>
+        <body>
+          ${html}
+        </body>
+      </html>`;
 
     // Launch Puppeteer and create a new page
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      headless: true,
+      executablePath: process.env.CHROME_BIN || null,
+    });
     const page = await browser.newPage();
 
     // Set the content of the page to the generated HTML
