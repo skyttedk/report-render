@@ -12,16 +12,16 @@ app.use(express.json());
 
 // POST endpoint to handle JSON data
 app.post("/", async (req, res) => {
-  const data = req.body;
+  try {
+    const data = req.body;
 
-  // Process the data (you can add your own logic here)
-  //const responseMessage = `Received JSON data: ${JSON.stringify(data)}`;
+    // Generate PDF with the received data
+    //const pdfPath = await generatePDF(data);
 
-  await generatePDF();
-
-  const responseMessage = `pdf generated successfully!`;
-
-  res.status(200).send(responseMessage);
+    res.status(200).json({ message: "PDF Generated Successfully!", pdfPath });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.listen(port, () => {
