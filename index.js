@@ -25,11 +25,11 @@ app.post("/", async (req, res) => {
     // Convert PDF buffer to Base64
     const base64Pdf = pdfBuffer.toString("base64");
 
-    // Set response headers for Base64 encoded PDF
-    res.set("Content-Type", "application/json");
+    // Set response headers for Base64 encoded PDF retunr text
+    res.set("Content-Type", "text/plain");
 
     // Send the Base64 encoded PDF as the response
-    res.json({ pdf: base64Pdf });
+    res.json(base64Pdf);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
