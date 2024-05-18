@@ -22,6 +22,9 @@ app.post("/", async (req, res) => {
     // Generate PDF with the received data
     const { pdfBuffer } = await generatePDF(data);
 
+    const pdfPath = path.resolve(__dirname, "out.pdf");
+    await fs.writeFile(pdfPath, pdfBuffer);
+
     // Set response headers for PDF
     res.set("Content-Type", "application/pdf");
     res.set("Content-Disposition", "attachment; filename=generated.pdf");
