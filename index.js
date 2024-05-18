@@ -14,23 +14,33 @@ const port = process.env.PORT || 3000;
 // Middleware to parse JSON bodies
 app.use(express.json());
 
-// POST endpoint to handle JSON data
+let browser; // Declare the browser variable globally
+
+// Function to initialize the Puppeteer browser
+async function initializeBrowser() {
+  if (!browser) {
+    browser = await puppeteer.launch({
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      headless: true,
+    });
+  }
+}
+
 app.post("/", async (req, res) => {
   try {
+    await initializeBrowser();
+
     const data = req.body.data;
     const layout = req.body.layout;
 
     // Generate PDF with the received data
-    const { pdfBuffer } = await generatePDF(atob(layout), data);
+    const pdfBuffer = await generatePDF(atob(layout), data);
 
-    // Convert PDF buffer to Base64
-    const base64Pdf = pdfBuffer.toString("base64");
+    // Set response headers for PDF
+    res.set("Content-Type", "application/pdf");
 
-    // Set response headers for Base64 encoded PDF retunr text
-    res.set("Content-Type", "text/plain");
-
-    // Send the Base64 encoded PDF as the response
-    res.json(base64Pdf);
+    // Send the PDF buffer as the response
+    res.send(pdfBuffer);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -43,8 +53,6 @@ app.listen(port, () => {
 async function generatePDF(layout, data) {
   try {
     // Load and compile the template
-    //const templatePath = path.resolve(__dirname, "templates/hello.hbs");
-    //const templateHtml = await fs.readFile(templatePath, "utf8");
     const template = Handlebars.compile(layout);
 
     // Load CSS
@@ -71,11 +79,7 @@ async function generatePDF(layout, data) {
         </body>
       </html>`;
 
-    // Launch Puppeteer and create a new page
-    const browser = await puppeteer.launch({
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-      headless: true,
-    });
+    // Create a new page in the existing browser instance
     const page = await browser.newPage();
 
     // Set the content of the page to the generated HTML
@@ -86,13 +90,21 @@ async function generatePDF(layout, data) {
     // Create PDF from page content
     const pdfBuffer = await page.pdf({ format: "A4" });
 
-    await browser.close();
+    await page.close(); // Close the page instead of the browser
 
     console.log("PDF Generated Successfully!");
 
-    return { pdfBuffer };
+    return pdfBuffer;
   } catch (error) {
     console.error("Error generating PDF:", error);
     throw error;
   }
 }
+
+// Gracefully close the browser instance on server shutdown
+process.on("SIGINT", async () => {
+  if (browser) {
+    await browser.close();
+  }
+  process.exit();
+});
