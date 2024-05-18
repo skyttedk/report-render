@@ -22,11 +22,14 @@ app.post("/", async (req, res) => {
     // Generate PDF with the received data
     const { pdfBuffer } = await generatePDF(data);
 
-    // Set response headers for PDF
-    res.set("Content-Type", "application/pdf");
+    // Convert PDF buffer to Base64
+    const base64Pdf = pdfBuffer.toString("base64");
 
-    // Send the PDF buffer as the response
-    res.send(pdfBuffer);
+    // Set response headers for Base64 encoded PDF retunr text
+    res.set("Content-Type", "text/plain");
+
+    // Send the Base64 encoded PDF as the response
+    res.json(base64Pdf);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
