@@ -17,10 +17,11 @@ app.use(express.json());
 // POST endpoint to handle JSON data
 app.post("/", async (req, res) => {
   try {
-    const data = req.body;
+    const data = req.body.data;
+    const layout = req.body.layout;
 
     // Generate PDF with the received data
-    const { pdfBuffer } = await generatePDF(data);
+    const { pdfBuffer } = await generatePDF(layout, data);
 
     // Convert PDF buffer to Base64
     const base64Pdf = pdfBuffer.toString("base64");
@@ -39,12 +40,12 @@ app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
 
-async function generatePDF(data) {
+async function generatePDF(layout, data) {
   try {
     // Load and compile the template
-    const templatePath = path.resolve(__dirname, "templates/hello.hbs");
-    const templateHtml = await fs.readFile(templatePath, "utf8");
-    const template = Handlebars.compile(templateHtml);
+    //const templatePath = path.resolve(__dirname, "templates/hello.hbs");
+    //const templateHtml = await fs.readFile(templatePath, "utf8");
+    const template = Handlebars.compile(layout);
 
     // Load CSS
     const cssPath = path.resolve(__dirname, "css/style.css");
