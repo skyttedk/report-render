@@ -19,9 +19,9 @@ app.post("/", async (req, res) => {
   try {
     const data = req.body.data;
     const layout = req.body.layout;
-    const decodedLayout = Buffer.from(layout, "base64").toString("utf-8");
+
     // Generate PDF with the received data
-    const { pdfBuffer } = await generatePDF(decodedLayout, data);
+    const { pdfBuffer } = await generatePDF(atob(layout), data);
 
     // Convert PDF buffer to Base64
     const base64Pdf = pdfBuffer.toString("base64");
