@@ -22,16 +22,14 @@ app.post("/", async (req, res) => {
     // Generate PDF with the received data
     const { pdfBuffer } = await generatePDF(data);
 
-    const pdfPath = path.resolve(__dirname, "out.pdf");
-    await fs.writeFile(pdfPath, pdfBuffer);
+    // Convert PDF buffer to Base64
+    const base64Pdf = pdfBuffer.toString("base64");
 
-    // Set response headers for PDF
-    res.set("Content-Type", "application/pdf");
-    res.set("Content-Disposition", "attachment; filename=generated.pdf");
-    res.set("Content-Length", pdfBuffer.length);
+    // Set response headers for Base64 encoded PDF
+    res.set("Content-Type", "application/json");
 
-    // Send the PDF buffer as the response
-    res.send(pdfBuffer);
+    // Send the Base64 encoded PDF as the response
+    res.json({ pdf: base64Pdf });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
