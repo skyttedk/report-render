@@ -20,11 +20,15 @@ app.post("/", async (req, res) => {
     const data = req.body;
 
     // Generate PDF with the received data
-    const base64Pdf = await generatePDF(data);
+    const { pdfBuffer } = await generatePDF(data);
 
-    res.set("Content-Type", "text/html");
-    res.status(200).send(base64Pdf);
-    //.json({ message: "PDF Generated Successfully!", pdf: base64Pdf });
+    // Set response headers for PDF
+    res.set("Content-Type", "application/pdf");
+    res.set("Content-Disposition", "attachment; filename=generated.pdf");
+    res.set("Content-Length", pdfBuffer.length);
+
+    // Send the PDF buffer as the response
+    res.send(pdfBuffer);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -82,12 +86,9 @@ async function generatePDF(data) {
 
     await browser.close();
 
-    // Convert PDF buffer to base64
-    const base64Pdf = pdfBuffer.toString("base64");
-
     console.log("PDF Generated Successfully!");
 
-    return base64Pdf;
+    return { pdfBuffer };
   } catch (error) {
     console.error("Error generating PDF:", error);
     throw error;
