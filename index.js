@@ -26,10 +26,22 @@ async function initializeBrowser() {
     });
   }
 }
+// create function to retreive data.json
+app.get("/data", (req, res) => {
+  try {
+    const data = fs.readFileSync("data.json");
+    res.send(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 app.post("/", async (req, res) => {
   try {
     await initializeBrowser();
+
+    //dump req.bodu to file
+    fs.writeFileSync("data.json", JSON.stringify(req.body));
 
     const dependencies = req.body.dependencies;
     const layout = req.body.layout;
