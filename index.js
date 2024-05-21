@@ -34,12 +34,22 @@ app.post("/", async (req, res) => {
     const dependencies = req.body.dependencies;
     const layout = req.body.layout;
     const data = req.body.data;
+    const fileFormat = req.body.fileFormat;
 
     // Generate PDF with the received data
-    const pdfBuffer = await generatePDF(dependencies, atob(layout), data);
+    const pdfBuffer = await generatePDF(
+      fileFormat,
+      dependencies,
+      atob(layout),
+      data
+    );
 
     // Set response headers for PDF
-    res.set("Content-Type", "application/pdf");
+    if (fileFormat === pdf) {
+      res.set("Content-Type", "application/pdf");
+    } else if (fileFormat === html) {
+      res.set("Content-Type", "text/html");
+    }
 
     // Send the PDF buffer as the response
     res.send(pdfBuffer);
@@ -98,14 +108,15 @@ async function generatePDF(dependencies, layout, data) {
       waitUntil: "domcontentloaded",
     });
 
-    // Create PDF from page content
-    const pdfBuffer = await page.pdf({ format: "A4" });
-
-    await page.close(); // Close the page instead of the browser
-
-    console.log("PDF Generated Successfully!");
-
-    return pdfBuffer;
+    if (fileFormat == "html") {
+      const html = await page.content();
+      await page.close(); // Close the page instead of the browser
+      return html;
+    } else if (fileFormat == "pdf") {
+      const pdfBuffer = await page.pdf({ format: "A4" });
+      await page.close(); // Close the page instead of the browser
+      return pdfBuffer;
+    }
   } catch (error) {
     console.error("Error generating PDF:", error);
     throw error;
