@@ -77,7 +77,7 @@ app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
 
-async function generatePDF(dependencies, layout, data) {
+async function generatePDF(fileFormat, dependencies, layout, data) {
   try {
     // Load and compile the template
     const template = Handlebars.compile(layout);
