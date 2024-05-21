@@ -60,9 +60,9 @@ app.post("/", async (req, res) => {
     );
 
     // Set response headers for PDF
-    if (fileFormat === pdf) {
+    if (fileFormat === "pdf") {
       res.set("Content-Type", "application/pdf");
-    } else if (fileFormat === html) {
+    } else if (fileFormat === "html") {
       res.set("Content-Type", "text/html");
     }
 
