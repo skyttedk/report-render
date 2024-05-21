@@ -29,6 +29,7 @@ async function initializeBrowser() {
 // create function to retreive data.json
 app.get("/data", (req, res) => {
   try {
+    console.log("call: /data");
     const data = fs.readFileSync("data.json");
     res.send(data);
   } catch (error) {
