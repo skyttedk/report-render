@@ -31,11 +31,12 @@ app.post("/", async (req, res) => {
   try {
     await initializeBrowser();
 
-    const data = req.body.data;
+    const dependencies = req.body.dependencies;
     const layout = req.body.layout;
+    const data = req.body.data;
 
     // Generate PDF with the received data
-    const pdfBuffer = await generatePDF(atob(layout), data);
+    const pdfBuffer = await generatePDF(dependencies, atob(layout), data);
 
     // Set response headers for PDF
     res.set("Content-Type", "application/pdf");
@@ -51,10 +52,21 @@ app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
 
-async function generatePDF(layout, data) {
+async function generatePDF(dependencies, layout, data) {
   try {
     // Load and compile the template
     const template = Handlebars.compile(layout);
+
+    //const dependenciesString '
+    dependencies = dependencies.map((dep) => {
+      // type = 0 , means css, 1 ja
+      if (dep.type === 0) {
+        return `<link rel="stylesheet" href="${dep.url}" />`;
+      }
+      if (dep.type === 1) {
+        return `<script src="${dep.url}"></script>`;
+      }
+    });
 
     // Load CSS
     const cssPath = path.resolve(__dirname, "css/style.css");
@@ -71,8 +83,7 @@ async function generatePDF(layout, data) {
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
           <title>Document</title>
           <style>${cssContent}</style>
-          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css"></link>
-          <link rel='stylesheet' href='//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css'>
+          ${dependencies.join("")}
         </head>
         <body>
           ${html}
