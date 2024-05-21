@@ -39,10 +39,12 @@ app.get("/data", (req, res) => {
 
 app.post("/", async (req, res) => {
   try {
-    await initializeBrowser();
+    console.log("call: /");
+    await initializeBrowser(); //can we keep this in memory
 
     //dump req.bodu to file
     fs.writeFileSync("data.json", JSON.stringify(req.body));
+    console.log("data.json saved");
 
     const dependencies = req.body.dependencies;
     const layout = req.body.layout;
