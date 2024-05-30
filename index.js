@@ -40,6 +40,7 @@ app.get("/data", (req, res) => {
 app.post("/", async (req, res) => {
   try {
     console.log("call: /");
+    /*
     await initializeBrowser(); //can we keep this in memory
 
     //dump req.bodu to file
@@ -58,6 +59,7 @@ app.post("/", async (req, res) => {
       atob(layout),
       data
     );
+    */
 
     // Set response headers for PDF
     if (fileFormat === "pdf") {
