@@ -73,7 +73,23 @@ app.post("/", async (req, res) => {
   }
 });
 
-app.listen(port, () => {
+app.listen(port, async () => {
+  // render debug
+  await initializeBrowser(); //can we keep this in memory
+
+  const dependencies = [];
+
+  const layoutPath = path.resolve(__dirname, "debug/layout.hbs");
+  const layout = await fs.readFile(layoutPath, "utf8");
+
+  const dataPath = path.resolve(__dirname, "debug/data.json");
+  const data = await fs.readFile(dataPath, "utf8");
+
+  const pdfBuffer = await generatePDF("html", dependencies, layout, data);
+
+  //save to fil
+  fs.writeFileSync("debug/debug.html", pdfBuffer);
+
   console.log(`Server is running on port ${port}`);
 });
 
@@ -123,12 +139,14 @@ async function generatePDF(fileFormat, dependencies, layout, data) {
       waitUntil: "domcontentloaded",
     });
 
+    await page.emulateMediaType("screen");
+
     if (fileFormat == "html") {
       const html = await page.content();
       await page.close(); // Close the page instead of the browser
       return html;
     } else if (fileFormat == "pdf") {
-      const pdfBuffer = await page.pdf({ format: "A4" });
+      const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
       await page.close(); // Close the page instead of the browser
       return pdfBuffer;
     }
