@@ -40,7 +40,7 @@ app.get("/data", (req, res) => {
 app.post("/", async (req, res) => {
   try {
     console.log("call: /");
-    /*
+
     await initializeBrowser(); //can we keep this in memory
 
     //dump req.bodu to file
@@ -59,7 +59,6 @@ app.post("/", async (req, res) => {
       atob(layout),
       data
     );
-    */
 
     // Set response headers for PDF
     if (fileFormat === "pdf") {
@@ -77,6 +76,7 @@ app.post("/", async (req, res) => {
 
 app.listen(port, async () => {
   // render debug
+  /*
   await initializeBrowser(); //can we keep this in memory
 
   const dependencies = [];
@@ -91,6 +91,7 @@ app.listen(port, async () => {
 
   //save to fil
   fs.writeFileSync("debug/debug.html", pdfBuffer);
+  */
 
   console.log(`Server is running on port ${port}`);
 });
