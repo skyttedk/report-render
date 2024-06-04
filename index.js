@@ -144,12 +144,55 @@ async function generatePDF(fileFormat, dependencies, layout, data) {
 
     await page.emulateMediaType("screen");
 
+    // Calculate the total number of pages
+    const totalPages = await page.evaluate(() => {
+      return Math.ceil(
+        document.documentElement.scrollHeight / window.innerHeight
+      );
+    });
+    console.log("Total pages:", totalPages);
+
+    // Inject JavaScript to update the page number placeholders
+    await page.evaluate((totalPages) => {
+      // Update the total number of pages
+      const placeholders = document.querySelectorAll(
+        '[data-placeholder="totalPages"]'
+      );
+      placeholders.forEach((el) => {
+        el.textContent = totalPages;
+      });
+
+      // Update the current page number
+      let currentPage = 1;
+      const updatePageNumbers = () => {
+        currentPage = Math.ceil(window.scrollY / window.innerHeight) + 1;
+        //console.log("Current page:", currentPage);
+        const pagePlaceholders = document.querySelectorAll(
+          '[data-placeholder="pageNumber"]'
+        );
+        pagePlaceholders.forEach((el) => {
+          el.textContent = currentPage;
+        });
+      };
+
+      window.addEventListener("scroll", updatePageNumbers);
+
+      updatePageNumbers(); // Initial call to set the page number
+    }, totalPages);
+
     if (fileFormat == "html") {
       const html = await page.content();
       await page.close(); // Close the page instead of the browser
       return html;
     } else if (fileFormat == "pdf") {
-      const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
+      const pdfBuffer = await page.pdf({
+        format: "A4",
+        printBackground: true,
+        margin: {
+          top: "40px",
+          bottom: "40px",
+        },
+      });
       await page.close(); // Close the page instead of the browser
       return pdfBuffer;
     }
