@@ -38,7 +38,6 @@ Handlebars.registerHelper('ifEquals', function (arg1, arg2, options) {
   return (arg1 === arg2) ? options.fn(this) : options.inverse(this);
 });
 
-// Function to initialize the Puppeteer browser
 async function initializeBrowser() {
   // If browser exists but has been running too long (12 hours), restart it
   const BROWSER_MAX_LIFETIME = 12 * 60 * 60 * 1000; // 12 hours in ms
@@ -52,16 +51,29 @@ async function initializeBrowser() {
   if (!browser) {
     console.log("Initializing browser...");
     browserStartTime = Date.now();
-    browser = await puppeteer.launch({
+
+    // Special configuration for Heroku
+    const options = {
       args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",
         "--disable-dev-shm-usage",
         "--disable-accelerated-2d-canvas",
+        "--no-first-run",
+        "--no-zygote",
+        "--single-process", // <- this one doesn't works in Windows
         "--disable-gpu"
       ],
       headless: true,
-    });
+    };
+
+    // Check if running on Heroku (presence of DYNO env variable)
+    if (process.env.DYNO) {
+      console.log('Running on Heroku, using special browser configuration');
+      options.executablePath = '/app/.apt/usr/bin/google-chrome';
+    }
+
+    browser = await puppeteer.launch(options);
 
     // Set up event listeners for browser crashes
     browser.on('disconnected', () => {
